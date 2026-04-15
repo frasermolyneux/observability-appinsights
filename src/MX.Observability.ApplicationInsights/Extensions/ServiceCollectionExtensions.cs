@@ -1,4 +1,6 @@
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using MX.Observability.ApplicationInsights.Auditing;
 using MX.Observability.ApplicationInsights.Filtering;
 using MX.Observability.ApplicationInsights.Filtering.Configuration;
@@ -22,7 +24,13 @@ public static class ServiceCollectionExtensions
         services.AddOptions<TelemetryFilterOptions>()
             .BindConfiguration(configSection);
 
+        // Register via DI for Worker Service / Azure Functions
         services.AddApplicationInsightsTelemetryProcessor<TelemetryFilterProcessor>();
+
+        // Also register via TelemetryConfiguration for ASP.NET Core
+        // (AddApplicationInsightsTelemetry uses its own pipeline that doesn't pick up
+        // processors registered via AddApplicationInsightsTelemetryProcessor)
+        services.ConfigureTelemetryModule<TelemetryFilterProcessor>(services);
 
         return services;
     }
@@ -39,8 +47,23 @@ public static class ServiceCollectionExtensions
             .Configure(configure);
 
         services.AddApplicationInsightsTelemetryProcessor<TelemetryFilterProcessor>();
+        services.ConfigureTelemetryModule<TelemetryFilterProcessor>(services);
 
         return services;
+    }
+
+    private static void ConfigureTelemetryModule<T>(this IServiceCollection services, IServiceCollection serviceCollection) where T : ITelemetryProcessor
+    {
+        services.AddSingleton<IConfigureOptions<TelemetryConfiguration>>(sp =>
+        {
+            var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<TelemetryFilterOptions>>();
+            return new ConfigureOptions<TelemetryConfiguration>(config =>
+            {
+                config.DefaultTelemetrySink.TelemetryProcessorChainBuilder
+                    .Use(next => new TelemetryFilterProcessor(next, optionsMonitor));
+                config.DefaultTelemetrySink.TelemetryProcessorChainBuilder.Build();
+            });
+        });
     }
 
     /// <summary>
