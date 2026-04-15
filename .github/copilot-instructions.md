@@ -1,0 +1,8 @@
+# Copilot Instructions
+
+- **Purpose & layout**: .NET 9/10 library under `src/` providing Application Insights telemetry filtering, structured audit logging, and job telemetry (`MX.Observability.ApplicationInsights`), with tests in `MX.Observability.ApplicationInsights.Tests`. Packaging/versioning driven by `version.json` with Nerdbank.GitVersioning; solution entry is `src/MX.Observability.ApplicationInsights.sln`.
+- **Build & test**: `dotnet build src/MX.Observability.ApplicationInsights.sln` then `dotnet test src/MX.Observability.ApplicationInsights.sln` for full test coverage.
+- **Key workflows**: Workflows in `.github/workflows/` — `build-and-test.yml` (feature/bugfix/hotfix pushes), `pr-verify.yml` (PR gate), `codequality.yml` (SonarCloud + CodeQL), `release-version-and-tag.yml` then `release-publish-nuget.yml` for NuGet releases, plus `dependabot-automerge.yml` and `copilot-setup-steps.yml`.
+- **Architecture**: Single `TelemetryFilterProcessor` dispatches by telemetry type (dependency/request/trace) using `IOptionsMonitor<TelemetryFilterOptions>` with cached `ParsedFilterRules`. `IAuditLogger` emits structured `EventTelemetry` with `Audit:` prefix. `IJobTelemetry` wraps job lifecycle with audit integration. All registered via `AddObservability()` extension method.
+- **Configuration**: Filtering configured via `ApplicationInsights:TelemetryFilter` config section bound to `TelemetryFilterOptions`. Supports live reload via `IOptionsMonitor`. Defaults are sensible for zero-config operation.
+- **Testing notes**: Multi-targeting `net9.0;net10.0` is enforced. Uses xUnit + Moq for `TelemetryClient` verification. Test naming follows `MethodName_Condition_ExpectedResult` pattern.
