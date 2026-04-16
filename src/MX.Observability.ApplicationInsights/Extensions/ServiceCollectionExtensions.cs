@@ -1,6 +1,5 @@
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using MX.Observability.ApplicationInsights.Auditing;
 using MX.Observability.ApplicationInsights.Filtering;
 using MX.Observability.ApplicationInsights.Filtering.Configuration;
@@ -14,37 +13,40 @@ namespace MX.Observability.ApplicationInsights.Extensions;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers the telemetry filter processor with configuration binding.
-    /// Call after AddApplicationInsightsTelemetry() or AddApplicationInsightsTelemetryWorkerService().
+    /// Registers all MX Observability services: telemetry filtering, audit logging, and job telemetry.
+    /// Call after <c>AddApplicationInsightsTelemetry()</c> or <c>AddApplicationInsightsTelemetryWorkerService()</c>.
+    /// <para>
+    /// The telemetry filter processor is registered via <see cref="ITelemetryModule"/>, which is the
+    /// official SDK extension point. Both ASP.NET Core and Worker Service SDKs discover and initialize
+    /// <see cref="ITelemetryModule"/> implementations from DI during <see cref="TelemetryConfiguration"/> setup.
+    /// </para>
     /// </summary>
-    public static IServiceCollection AddTelemetryFiltering(
-        this IServiceCollection services,
-        string configSection = TelemetryFilterOptions.SectionName)
+    public static IServiceCollection AddObservability(this IServiceCollection services)
     {
         services.AddOptions<TelemetryFilterOptions>()
-            .BindConfiguration(configSection);
+            .BindConfiguration(TelemetryFilterOptions.SectionName);
 
-        // Register via ITelemetryModule — the official SDK extension point.
-        // The SDK discovers all ITelemetryModule implementations from DI and calls
-        // Initialize(TelemetryConfiguration) during setup, before Build() is called.
-        // This works for ASP.NET Core, Worker Service, and Azure Functions.
         services.AddSingleton<ITelemetryModule, TelemetryFilterModule>();
+        services.AddSingleton<IAuditLogger, ApplicationInsightsAuditLogger>();
+        services.AddSingleton<IJobTelemetry, ApplicationInsightsJobTelemetry>();
 
         return services;
     }
 
     /// <summary>
-    /// Registers the telemetry filter processor with an action to override defaults.
+    /// Registers all MX Observability services with custom filter configuration.
     /// </summary>
-    public static IServiceCollection AddTelemetryFiltering(
+    public static IServiceCollection AddObservability(
         this IServiceCollection services,
-        Action<TelemetryFilterOptions> configure)
+        Action<TelemetryFilterOptions> configureFiltering)
     {
         services.AddOptions<TelemetryFilterOptions>()
             .BindConfiguration(TelemetryFilterOptions.SectionName)
-            .Configure(configure);
+            .Configure(configureFiltering);
 
         services.AddSingleton<ITelemetryModule, TelemetryFilterModule>();
+        services.AddSingleton<IAuditLogger, ApplicationInsightsAuditLogger>();
+        services.AddSingleton<IJobTelemetry, ApplicationInsightsJobTelemetry>();
 
         return services;
     }
@@ -60,36 +62,10 @@ public static class ServiceCollectionExtensions
 
     /// <summary>
     /// Registers the job telemetry service for scheduled job lifecycle tracking.
-    /// Requires <see cref="AddAuditLogging"/> to be called first (or use <see cref="AddObservability"/>).
     /// </summary>
     public static IServiceCollection AddJobTelemetry(this IServiceCollection services)
     {
         services.AddSingleton<IJobTelemetry, ApplicationInsightsJobTelemetry>();
-        return services;
-    }
-
-    /// <summary>
-    /// Registers all MX Observability services: telemetry filtering, audit logging, and job telemetry.
-    /// Call after AddApplicationInsightsTelemetry() or AddApplicationInsightsTelemetryWorkerService().
-    /// </summary>
-    public static IServiceCollection AddObservability(this IServiceCollection services)
-    {
-        services.AddTelemetryFiltering();
-        services.AddAuditLogging();
-        services.AddJobTelemetry();
-        return services;
-    }
-
-    /// <summary>
-    /// Registers all MX Observability services with custom filter configuration.
-    /// </summary>
-    public static IServiceCollection AddObservability(
-        this IServiceCollection services,
-        Action<TelemetryFilterOptions> configureFiltering)
-    {
-        services.AddTelemetryFiltering(configureFiltering);
-        services.AddAuditLogging();
-        services.AddJobTelemetry();
         return services;
     }
 }
