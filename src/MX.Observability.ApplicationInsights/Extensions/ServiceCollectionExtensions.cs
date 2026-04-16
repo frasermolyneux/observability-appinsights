@@ -54,17 +54,16 @@ public static class ServiceCollectionExtensions
 
     private static void ConfigureTelemetryModule<T>(this IServiceCollection services, IServiceCollection serviceCollection) where T : ITelemetryProcessor
     {
-        // Use PostConfigure to ensure the processor is added AFTER the TelemetryConfiguration
-        // is fully built by both ASP.NET Core and Worker Service SDKs. This handles hybrid
-        // hosting scenarios (e.g. Worker SDK project with ASP.NET Core health endpoints).
-        services.AddSingleton<IPostConfigureOptions<TelemetryConfiguration>>(sp =>
+        // Register via IConfigureOptions<TelemetryConfiguration> for ASP.NET Core apps.
+        // This callback runs during TelemetryConfiguration singleton resolution.
+        // Do NOT call .Build() — the SDK builds the chain after all callbacks complete.
+        services.AddSingleton<IConfigureOptions<TelemetryConfiguration>>(sp =>
         {
             var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<TelemetryFilterOptions>>();
-            return new PostConfigureOptions<TelemetryConfiguration>(Options.DefaultName, config =>
+            return new ConfigureOptions<TelemetryConfiguration>(config =>
             {
                 config.DefaultTelemetrySink.TelemetryProcessorChainBuilder
                     .Use(next => new TelemetryFilterProcessor(next, optionsMonitor));
-                config.DefaultTelemetrySink.TelemetryProcessorChainBuilder.Build();
             });
         });
     }
