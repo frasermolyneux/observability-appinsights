@@ -24,13 +24,11 @@ public static class ServiceCollectionExtensions
         services.AddOptions<TelemetryFilterOptions>()
             .BindConfiguration(configSection);
 
-        // Register via DI for Worker Service / Azure Functions
-        services.AddApplicationInsightsTelemetryProcessor<TelemetryFilterProcessor>();
-
-        // Also register via TelemetryConfiguration for ASP.NET Core
-        // (AddApplicationInsightsTelemetry uses its own pipeline that doesn't pick up
-        // processors registered via AddApplicationInsightsTelemetryProcessor)
-        services.ConfigureTelemetryModule<TelemetryFilterProcessor>(services);
+        // Register via ITelemetryModule — the official SDK extension point.
+        // The SDK discovers all ITelemetryModule implementations from DI and calls
+        // Initialize(TelemetryConfiguration) during setup, before Build() is called.
+        // This works for ASP.NET Core, Worker Service, and Azure Functions.
+        services.AddSingleton<ITelemetryModule, TelemetryFilterModule>();
 
         return services;
     }
@@ -46,26 +44,9 @@ public static class ServiceCollectionExtensions
             .BindConfiguration(TelemetryFilterOptions.SectionName)
             .Configure(configure);
 
-        services.AddApplicationInsightsTelemetryProcessor<TelemetryFilterProcessor>();
-        services.ConfigureTelemetryModule<TelemetryFilterProcessor>(services);
+        services.AddSingleton<ITelemetryModule, TelemetryFilterModule>();
 
         return services;
-    }
-
-    private static void ConfigureTelemetryModule<T>(this IServiceCollection services, IServiceCollection serviceCollection) where T : ITelemetryProcessor
-    {
-        // Register via IConfigureOptions<TelemetryConfiguration> for ASP.NET Core apps.
-        // This callback runs during TelemetryConfiguration singleton resolution.
-        // Do NOT call .Build() — the SDK builds the chain after all callbacks complete.
-        services.AddSingleton<IConfigureOptions<TelemetryConfiguration>>(sp =>
-        {
-            var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<TelemetryFilterOptions>>();
-            return new ConfigureOptions<TelemetryConfiguration>(config =>
-            {
-                config.DefaultTelemetrySink.TelemetryProcessorChainBuilder
-                    .Use(next => new TelemetryFilterProcessor(next, optionsMonitor));
-            });
-        });
     }
 
     /// <summary>
