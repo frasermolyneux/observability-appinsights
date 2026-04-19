@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <RootNamespace>MX.Observability.ApplicationInsights.AspNetCore</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>MX.Observability.ApplicationInsights.AspNetCore</PackageId>
+    <Product>MX Observability - Application Insights (ASP.NET Core)</Product>
+    <Title>Application Insights Telemetry Filtering for ASP.NET Core</Title>
+    <Description>ASP.NET Core adapter for MX.Observability.ApplicationInsights. Wires the configurable telemetry filter into the Application Insights pipeline via the ASP.NET Core SDK's processor factory. Reference this package from ASP.NET Core web/API apps and Worker apps that initialize Application Insights via AddApplicationInsightsTelemetry().</Description>
+    <PackageProjectUrl>https://github.com/frasermolyneux/observability-appinsights</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/frasermolyneux/observability-appinsights</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
+    <ProjectReference Include="..\MX.Observability.ApplicationInsights\MX.Observability.ApplicationInsights.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

@@ -9,7 +9,7 @@
     <PackageId>MX.Observability.ApplicationInsights</PackageId>
     <Product>MX Observability - Application Insights</Product>
     <Title>Application Insights Telemetry Filtering, Audit Logging, and Job Telemetry</Title>
-    <Description>Shared observability library providing configurable telemetry filtering (dependencies, requests, traces), structured audit logging with category-specific builders, and scheduled job telemetry for .NET applications using Azure Application Insights.</Description>
+    <Description>Hosting-agnostic core for MX Observability: telemetry filter processor implementation, configurable filter options (dependencies, requests, traces), structured audit logging with category-specific builders, and scheduled job telemetry. Reference one of the host-specific adapter packages (MX.Observability.ApplicationInsights.AspNetCore or MX.Observability.ApplicationInsights.WorkerService) to wire the filter into the Application Insights pipeline.</Description>
     <PackageProjectUrl>https://github.com/frasermolyneux/observability-appinsights</PackageProjectUrl>
     <RepositoryUrl>https://github.com/frasermolyneux/observability-appinsights</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>

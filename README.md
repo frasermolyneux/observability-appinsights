@@ -8,7 +8,13 @@
 
 ## Overview
 
-Shared observability library for .NET 9/10 applications using Azure Application Insights. Published as `MX.Observability.ApplicationInsights` on NuGet.
+Shared observability library for .NET 9/10 applications using Azure Application Insights. Published as **three** NuGet packages:
+
+| Package | Use when your host calls... |
+|---------|------------------------------|
+| [`MX.Observability.ApplicationInsights`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights) | (core; referenced transitively) |
+| [`MX.Observability.ApplicationInsights.AspNetCore`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.AspNetCore) | `AddApplicationInsightsTelemetry()` |
+| [`MX.Observability.ApplicationInsights.WorkerService`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.WorkerService) | `AddApplicationInsightsTelemetryWorkerService()` |
 
 Provides three pillars:
 
@@ -16,16 +22,24 @@ Provides three pillars:
 2. **Audit Logging** — Structured `IAuditLogger` with category-specific builders (`UserAction`, `ServerAction`, `SystemAction`) for consistent, queryable audit events across all applications.
 3. **Job Telemetry** — `IJobTelemetry` for tracking scheduled job lifecycles (start, complete, fail) with duration metrics and audit trail integration.
 
-## Quick Start
+> **Why two adapter packages?** The Application Insights SDK ships separate `ITelemetryProcessorFactory` interfaces (and matching `AddApplicationInsightsTelemetryProcessor<T>()` extensions) in the AspNetCore and WorkerService SDK packages — they are *different types in different namespaces*, and each SDK only sees its own. A single combined package would either duplicate hosting dependencies for every consumer or risk extension-method ambiguity. Two thin adapters (each ~40 lines) avoid both problems and let the SDK's own, supported registration path do the work.
+
+## Quick Start — ASP.NET Core
 
 ```csharp
-// Register all three features
-builder.Services.AddObservability();
+using MX.Observability.ApplicationInsights.AspNetCore;
 
-// Or individually
-builder.Services.AddTelemetryFiltering();
-builder.Services.AddAuditLogging();
-builder.Services.AddJobTelemetry();
+builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.AddObservability();
+```
+
+## Quick Start — Worker Service / Functions Isolated
+
+```csharp
+using MX.Observability.ApplicationInsights.WorkerService;
+
+builder.Services.AddApplicationInsightsTelemetryWorkerService();
+builder.Services.AddObservability();
 ```
 
 ## Configuration
