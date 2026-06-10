@@ -103,3 +103,9 @@ Please read the [contributing](CONTRIBUTING.md) guidance; this is a learning and
 ## Security
 
 Please read the [security](SECURITY.md) guidance.
+
+## Local dev: MCP wire-up
+
+This repo is wired to the `frasermolyneux-copilot` MCP server (org-wide standards catalog). The `.github/workflows/copilot-setup-steps.yml` workflow pins `frasermolyneux/.github-copilot` at `refs/tags/v0.1.0` and builds the MCP server into `.github-copilot/mcp-server/dist/`. The GitHub Copilot coding agent picks it up automatically via `.github/copilot/mcp_config.json`.
+
+For local IDE wire-up (VS Code, Claude Desktop, etc.) and the full tool surface, see `.github-copilot/mcp-server/README.md` in the shared-config repo.
