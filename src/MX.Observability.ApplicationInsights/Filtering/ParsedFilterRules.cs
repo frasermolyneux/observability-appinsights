@@ -37,6 +37,11 @@ internal sealed class ParsedFilterRules
     public HashSet<string> TraceExcludedCategories { get; }
     public string[] TraceExcludedMessageContains { get; }
 
+    // Custom events
+    public bool CustomEventsEnabled { get; }
+    public HashSet<string> CustomEventAllowedNames { get; }
+    public string[] CustomEventAllowedNamePrefixes { get; }
+
     private ParsedFilterRules(TelemetryFilterOptions options)
     {
         Enabled = options.Enabled;
@@ -68,6 +73,12 @@ internal sealed class ParsedFilterRules
         TraceAlwaysRetainCategories = ParseCsvToHashSet(traces.AlwaysRetainCategories);
         TraceExcludedCategories = ParseCsvToHashSet(traces.ExcludedCategories);
         TraceExcludedMessageContains = ParseCsvToArray(traces.ExcludedMessageContains);
+
+        // Custom events
+        var customEvents = options.CustomEvents;
+        CustomEventsEnabled = customEvents.Enabled;
+        CustomEventAllowedNames = ParseCsvToHashSet(customEvents.AllowedNames);
+        CustomEventAllowedNamePrefixes = ParseCsvToArray(customEvents.AllowedNamePrefixes);
     }
 
     public static ParsedFilterRules From(TelemetryFilterOptions options) => new(options);

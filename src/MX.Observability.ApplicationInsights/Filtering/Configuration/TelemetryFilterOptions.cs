@@ -8,4 +8,5 @@ public class TelemetryFilterOptions
     public DependencyFilterOptions Dependencies { get; set; } = new();
     public RequestFilterOptions Requests { get; set; } = new();
     public TraceFilterOptions Traces { get; set; } = new();
+    public CustomEventFilterOptions CustomEvents { get; set; } = new();
 }

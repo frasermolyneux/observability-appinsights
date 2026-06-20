@@ -41,6 +41,7 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
             DependencyTelemetry dep => ShouldFilterDependency(dep, rules),
             RequestTelemetry req => ShouldFilterRequest(req, rules),
             TraceTelemetry trace => ShouldFilterTrace(trace, rules),
+            EventTelemetry evt => ShouldFilterCustomEvent(evt, rules),
             _ => false
         };
 
@@ -177,5 +178,29 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
             return true;
 
         return false;
+    }
+
+    internal static bool ShouldFilterCustomEvent(EventTelemetry customEvent, ParsedFilterRules rules)
+    {
+        if (!rules.CustomEventsEnabled)
+            return false;
+
+        // Fail open if no allow-list is configured.
+        if (rules.CustomEventAllowedNames.Count == 0 && rules.CustomEventAllowedNamePrefixes.Length == 0)
+            return false;
+
+        if (string.IsNullOrWhiteSpace(customEvent.Name))
+            return true;
+
+        if (rules.CustomEventAllowedNames.Contains(customEvent.Name))
+            return false;
+
+        foreach (var prefix in rules.CustomEventAllowedNamePrefixes)
+        {
+            if (customEvent.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+
+        return true;
     }
 }

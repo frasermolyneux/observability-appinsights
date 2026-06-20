@@ -127,10 +127,43 @@ public class TelemetryFilterProcessorTests
     }
 
     [Fact]
-    public void Process_EventTelemetry_AlwaysPassesThrough()
+    public void Process_EventTelemetry_DelegatesToShouldFilter()
     {
-        var processor = CreateProcessor();
+        var options = new TelemetryFilterOptions
+        {
+            Enabled = true,
+            CustomEvents = new CustomEventFilterOptions
+            {
+                Enabled = true,
+                AllowedNamePrefixes = "Audit:",
+                AllowedNames = ""
+            }
+        };
+        var processor = CreateProcessor(options);
+
         var evt = new EventTelemetry("TestEvent");
+
+        processor.Process(evt);
+
+        Assert.Empty(_passedThrough);
+    }
+
+    [Fact]
+    public void Process_EventTelemetry_AllowedAuditPrefix_PassesThrough()
+    {
+        var options = new TelemetryFilterOptions
+        {
+            Enabled = true,
+            CustomEvents = new CustomEventFilterOptions
+            {
+                Enabled = true,
+                AllowedNamePrefixes = "Audit:",
+                AllowedNames = ""
+            }
+        };
+        var processor = CreateProcessor(options);
+
+        var evt = new EventTelemetry("Audit:TestEvent");
 
         processor.Process(evt);
 
