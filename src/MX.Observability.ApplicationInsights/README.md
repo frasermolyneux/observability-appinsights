@@ -8,4 +8,3 @@ Hosting-agnostic core for the MX Observability libraries: configurable telemetry
 - [`MX.Observability.ApplicationInsights.WorkerService`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.WorkerService) — for hosts using `AddApplicationInsightsTelemetryWorkerService()`
 
 See the [GitHub repository](https://github.com/frasermolyneux/observability-appinsights) for full documentation.
-
