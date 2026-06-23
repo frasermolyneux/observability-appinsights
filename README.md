@@ -10,10 +10,10 @@
 
 Shared observability library for .NET 9/10 applications using Azure Application Insights. Published as **three** NuGet packages:
 
-| Package | Use when your host calls... |
-|---------|------------------------------|
-| [`MX.Observability.ApplicationInsights`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights) | (core; referenced transitively) |
-| [`MX.Observability.ApplicationInsights.AspNetCore`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.AspNetCore) | `AddApplicationInsightsTelemetry()` |
+| Package                                                                                                                                   | Use when your host calls...                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| [`MX.Observability.ApplicationInsights`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights)                             | (core; referenced transitively)                  |
+| [`MX.Observability.ApplicationInsights.AspNetCore`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.AspNetCore)       | `AddApplicationInsightsTelemetry()`              |
 | [`MX.Observability.ApplicationInsights.WorkerService`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.WorkerService) | `AddApplicationInsightsTelemetryWorkerService()` |
 
 Provides three pillars:
@@ -46,18 +46,18 @@ builder.Services.AddObservability();
 
 Telemetry filtering is configured via `ApplicationInsights:TelemetryFilter` configuration keys (Azure App Configuration, appsettings.json, etc.):
 
-| Key | Default | Description |
-|-----|---------|-------------|
-| `...:Enabled` | `true` | Global kill-switch |
-| `...:Dependencies:Enabled` | `true` | Filter dependencies |
-| `...:Dependencies:DurationThresholdMs` | `1000` | Keep slow dependencies |
-| `...:Dependencies:FilterAllTypes` | `true` | Filter all types (vs allowlist) |
-| `...:Requests:Enabled` | `true` | Filter requests |
-| `...:Requests:DurationThresholdMs` | `1000` | Keep slow requests |
-| `...:Requests:ExcludedPaths` | `/healthz,/health,/api/health` | Always filter these paths |
-| `...:Requests:RetainedStatusCodeRanges` | `400-599` | Always keep errors |
-| `...:Traces:Enabled` | `true` | Filter traces |
-| `...:Traces:MinSeverity` | `Warning` | Minimum severity to retain |
+| Key                                     | Default                      | Description                     |
+| --------------------------------------- | ---------------------------- | ------------------------------- |
+| `...:Enabled`                           | `true`                       | Global kill-switch              |
+| `...:Dependencies:Enabled`              | `true`                       | Filter dependencies             |
+| `...:Dependencies:DurationThresholdMs`  | `1000`                       | Keep slow dependencies          |
+| `...:Dependencies:FilterAllTypes`       | `true`                       | Filter all types (vs allowlist) |
+| `...:Requests:Enabled`                  | `true`                       | Filter requests                 |
+| `...:Requests:DurationThresholdMs`      | `1000`                       | Keep slow requests              |
+| `...:Requests:ExcludedPaths`            | `/health/live,/health/ready` | Always filter these paths       |
+| `...:Requests:RetainedStatusCodeRanges` | `400-599`                    | Always keep errors              |
+| `...:Traces:Enabled`                    | `true`                       | Filter traces                   |
+| `...:Traces:MinSeverity`                | `Warning`                    | Minimum severity to retain      |
 
 See full configuration reference in [docs/configuration.md](docs/configuration.md).
 

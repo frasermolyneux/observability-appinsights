@@ -102,7 +102,9 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
         {
             var path = request.Url.AbsolutePath;
             if (rules.RequestExcludedPaths.Any(p =>
-                path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+                path.Equals(p, StringComparison.OrdinalIgnoreCase) ||
+                path.EndsWith(p, StringComparison.OrdinalIgnoreCase) ||
+                path.Contains($"{p}/", StringComparison.OrdinalIgnoreCase)))
                 return true;
         }
 
@@ -110,7 +112,7 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
         if (rules.RequestExcludedHttpMethods.Count > 0 &&
             !string.IsNullOrEmpty(request.Name))
         {
-            // Request.Name often starts with HTTP method (e.g. "GET /api/health")
+            // Request.Name often starts with HTTP method (e.g. "GET /api/health/live")
             var spaceIndex = request.Name.IndexOf(' ');
             var method = spaceIndex > 0 ? request.Name[..spaceIndex] : request.Name;
             if (rules.RequestExcludedHttpMethods.Contains(method))

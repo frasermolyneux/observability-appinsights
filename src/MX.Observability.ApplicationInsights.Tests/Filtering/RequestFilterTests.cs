@@ -17,7 +17,7 @@ public class RequestFilterTests
                 Enabled = true,
                 DurationThresholdMs = 1000,
                 SuccessOnly = true,
-                ExcludedPaths = "/healthz,/health",
+                ExcludedPaths = "/health/live,/health/ready",
                 ExcludedHttpMethods = "",
                 RetainedStatusCodes = "",
                 RetainedStatusCodeRanges = ""
@@ -36,7 +36,7 @@ public class RequestFilterTests
             Success = false,
             Duration = TimeSpan.FromMilliseconds(5000),
             ResponseCode = "500",
-            Url = new Uri("https://example.com/healthz")
+            Url = new Uri("https://example.com/v1.0/health/live")
         };
 
         Assert.True(TelemetryFilterProcessor.ShouldFilterRequest(req, rules));

@@ -75,7 +75,7 @@ public class TelemetryFilterProcessorTests
             Requests = new RequestFilterOptions
             {
                 Enabled = true,
-                ExcludedPaths = "/health",
+                ExcludedPaths = "/health/ready",
                 DurationThresholdMs = 1000,
                 RetainedStatusCodeRanges = ""
             }
@@ -87,7 +87,7 @@ public class TelemetryFilterProcessorTests
             Success = true,
             Duration = TimeSpan.FromMilliseconds(50),
             ResponseCode = "200",
-            Url = new Uri("https://example.com/health")
+            Url = new Uri("https://example.com/v1.0/health/ready")
         };
         processor.Process(req);
 
