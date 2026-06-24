@@ -2,19 +2,27 @@
 
 [![Build and Test](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/build-and-test.yml)
 [![Code Quality](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/codequality.yml/badge.svg)](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/codequality.yml)
-[![Release - Version and Tag](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/release-version-and-tag.yml/badge.svg)](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/release-version-and-tag.yml)
+[![Copilot Setup Steps](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/copilot-setup-steps.yml/badge.svg)](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/copilot-setup-steps.yml)
+[![Dependabot Auto-Merge](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/dependabot-automerge.yml/badge.svg)](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/dependabot-automerge.yml)
+[![PR Verify](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/pr-verify.yml/badge.svg)](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/pr-verify.yml)
 [![Release - Publish NuGet](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/release-publish-nuget.yml/badge.svg)](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/release-publish-nuget.yml)
-[![NuGet](https://img.shields.io/nuget/v/MX.Observability.ApplicationInsights.svg)](https://www.nuget.org/packages/MX.Observability.ApplicationInsights/)
+[![Release - Version and Tag](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/release-version-and-tag.yml/badge.svg)](https://github.com/frasermolyneux/observability-appinsights/actions/workflows/release-version-and-tag.yml)
+
+## Documentation
+
+Documentation is being expanded in the docs folder.
 
 ## Overview
 
-Shared observability library for .NET 9/10 applications using Azure Application Insights. Published as **three** NuGet packages:
+Shared observability library for .NET 9/10 applications using Azure Application Insights. It provides telemetry filtering, structured auditing, and job lifecycle telemetry that can be applied consistently across web and worker workloads. The repository publishes three NuGet packages covering the shared core plus host-specific adapters for ASP.NET Core and Worker Service hosting models. This package set is used across the wider repository estate to standardize telemetry behavior and audit visibility.
 
-| Package                                                                                                                                   | Use when your host calls...                      |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| [`MX.Observability.ApplicationInsights`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights)                             | (core; referenced transitively)                  |
-| [`MX.Observability.ApplicationInsights.AspNetCore`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.AspNetCore)       | `AddApplicationInsightsTelemetry()`              |
-| [`MX.Observability.ApplicationInsights.WorkerService`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.WorkerService) | `AddApplicationInsightsTelemetryWorkerService()` |
+## NuGet Packages
+
+| Package                                                                                                                                   | Latest                                                                                                                                                                                | Description                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [`MX.Observability.ApplicationInsights`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights)                             | [![NuGet](https://img.shields.io/nuget/v/MX.Observability.ApplicationInsights.svg)](https://www.nuget.org/packages/MX.Observability.ApplicationInsights/)                             | Core observability services for telemetry filtering, auditing, and job telemetry |
+| [`MX.Observability.ApplicationInsights.AspNetCore`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.AspNetCore)       | [![NuGet](https://img.shields.io/nuget/v/MX.Observability.ApplicationInsights.AspNetCore.svg)](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.AspNetCore/)       | ASP.NET Core adapter for hosting-specific telemetry processor registration       |
+| [`MX.Observability.ApplicationInsights.WorkerService`](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.WorkerService) | [![NuGet](https://img.shields.io/nuget/v/MX.Observability.ApplicationInsights.WorkerService.svg)](https://www.nuget.org/packages/MX.Observability.ApplicationInsights.WorkerService/) | Worker Service adapter for background jobs and Functions-style workloads         |
 
 Provides three pillars:
 
@@ -102,4 +110,4 @@ Please read the [contributing](CONTRIBUTING.md) guidance; this is a learning and
 
 ## Security
 
-Please read the [security](SECURITY.md) guidance.
+Please read the [security](SECURITY.md) guidance; I am always open to security feedback through email or opening an issue.
