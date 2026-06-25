@@ -46,25 +46,33 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
         };
 
         if (!shouldFilter)
+        {
             _next.Process(item);
+        }
     }
 
     internal static bool ShouldFilterDependency(DependencyTelemetry dependency, ParsedFilterRules rules)
     {
         if (!rules.DependenciesEnabled)
+        {
             return false;
+        }
 
         // Always filter ignored targets (e.g. localhost)
         if (rules.DependencyIgnoredTargets.Count > 0 &&
             !string.IsNullOrEmpty(dependency.Target) &&
             rules.DependencyIgnoredTargets.Contains(dependency.Target))
+        {
             return true;
+        }
 
         // Check if this dependency type should be filtered
         if (!rules.DependencyFilterAllTypes)
         {
             if (string.IsNullOrEmpty(dependency.Type))
+            {
                 return false;
+            }
 
             var typeMatches =
                 rules.DependencyExcludedTypes.Contains(dependency.Type) ||
@@ -72,22 +80,30 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
                     dependency.Type.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
             if (!typeMatches)
+            {
                 return false;
+            }
         }
 
         // Always retain result codes of interest (e.g. 429, 503)
         if (rules.DependencyRetainedResultCodes.Count > 0 &&
             !string.IsNullOrEmpty(dependency.ResultCode) &&
             rules.DependencyRetainedResultCodes.Contains(dependency.ResultCode))
+        {
             return false;
+        }
 
         // Always retain failed calls
         if (dependency.Success != true)
+        {
             return false;
+        }
 
         // Always retain slow calls
         if (dependency.Duration.TotalMilliseconds > rules.DependencyDurationThresholdMs)
+        {
             return false;
+        }
 
         return true;
     }
@@ -95,7 +111,9 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
     internal static bool ShouldFilterRequest(RequestTelemetry request, ParsedFilterRules rules)
     {
         if (!rules.RequestsEnabled)
+        {
             return false;
+        }
 
         // Always filter excluded paths (health checks)
         if (rules.RequestExcludedPaths.Length > 0 && request.Url is not null)
@@ -105,7 +123,9 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
                 path.Equals(p, StringComparison.OrdinalIgnoreCase) ||
                 path.EndsWith(p, StringComparison.OrdinalIgnoreCase) ||
                 path.Contains($"{p}/", StringComparison.OrdinalIgnoreCase)))
+            {
                 return true;
+            }
         }
 
         // Always filter excluded HTTP methods (OPTIONS, HEAD)
@@ -116,29 +136,39 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
             var spaceIndex = request.Name.IndexOf(' ');
             var method = spaceIndex > 0 ? request.Name[..spaceIndex] : request.Name;
             if (rules.RequestExcludedHttpMethods.Contains(method))
+            {
                 return true;
+            }
         }
 
         // Always retain specific status codes
         if (int.TryParse(request.ResponseCode, out var statusCode))
         {
             if (rules.RequestRetainedStatusCodes.Contains(request.ResponseCode))
+            {
                 return false;
+            }
 
             foreach (var (min, max) in rules.RequestRetainedStatusCodeRanges)
             {
                 if (statusCode >= min && statusCode <= max)
+                {
                     return false;
+                }
             }
         }
 
         // If SuccessOnly, only filter successful requests
         if (rules.RequestSuccessOnly && request.Success != true)
+        {
             return false;
+        }
 
         // Always retain slow requests
         if (request.Duration.TotalMilliseconds > rules.RequestDurationThresholdMs)
+        {
             return false;
+        }
 
         return true;
     }
@@ -146,7 +176,9 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
     internal static bool ShouldFilterTrace(TraceTelemetry trace, ParsedFilterRules rules)
     {
         if (!rules.TracesEnabled)
+        {
             return false;
+        }
 
         // Extract category from properties (ILogger sets "CategoryName")
         var category = trace.Properties.TryGetValue("CategoryName", out var cat) ? cat : null;
@@ -155,7 +187,9 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
         if (rules.TraceExcludedCategories.Count > 0 &&
             !string.IsNullOrEmpty(category) &&
             rules.TraceExcludedCategories.Contains(category))
+        {
             return true;
+        }
 
         // Always filter messages containing excluded substrings
         if (rules.TraceExcludedMessageContains.Length > 0 &&
@@ -164,7 +198,9 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
             foreach (var substring in rules.TraceExcludedMessageContains)
             {
                 if (trace.Message.Contains(substring, StringComparison.OrdinalIgnoreCase))
+                {
                     return true;
+                }
             }
         }
 
@@ -172,12 +208,16 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
         if (rules.TraceAlwaysRetainCategories.Count > 0 &&
             !string.IsNullOrEmpty(category) &&
             rules.TraceAlwaysRetainCategories.Contains(category))
+        {
             return false;
+        }
 
         // Filter by severity
         var severity = trace.SeverityLevel ?? SeverityLevel.Verbose;
         if (severity < rules.TraceMinSeverity)
+        {
             return true;
+        }
 
         return false;
     }
@@ -185,22 +225,32 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
     internal static bool ShouldFilterCustomEvent(EventTelemetry customEvent, ParsedFilterRules rules)
     {
         if (!rules.CustomEventsEnabled)
+        {
             return false;
+        }
 
         // Fail open if no allow-list is configured.
         if (rules.CustomEventAllowedNames.Count == 0 && rules.CustomEventAllowedNamePrefixes.Length == 0)
+        {
             return false;
+        }
 
         if (string.IsNullOrWhiteSpace(customEvent.Name))
+        {
             return true;
+        }
 
         if (rules.CustomEventAllowedNames.Contains(customEvent.Name))
+        {
             return false;
+        }
 
         foreach (var prefix in rules.CustomEventAllowedNamePrefixes)
         {
             if (customEvent.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
                 return false;
+            }
         }
 
         return true;

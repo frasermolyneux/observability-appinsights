@@ -68,7 +68,10 @@ public sealed class AuditEventBuilder
         _targetId = playerGuid;
         _targetType = "Player";
         if (username is not null)
+        {
             _targetName = username;
+        }
+
         return this;
     }
 
@@ -104,7 +107,10 @@ public sealed class AuditEventBuilder
     public AuditEventBuilder WithProperties(Dictionary<string, string> properties)
     {
         foreach (var (key, value) in properties)
+        {
             _properties[key] = value;
+        }
+
         return this;
     }
 

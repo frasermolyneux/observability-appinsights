@@ -39,7 +39,9 @@ public sealed class ApplicationInsightsAuditLogger : IAuditLogger
 
         // Consumer-provided extensible properties
         foreach (var (key, value) in auditEvent.Properties)
+        {
             telemetry.Properties[key] = value;
+        }
 
         _telemetryClient.TrackEvent(telemetry);
     }
@@ -47,6 +49,8 @@ public sealed class ApplicationInsightsAuditLogger : IAuditLogger
     private static void SetIfNotNull(EventTelemetry telemetry, string key, string? value)
     {
         if (value is not null)
+        {
             telemetry.Properties[key] = value;
+        }
     }
 }

@@ -88,7 +88,11 @@ public sealed class ApplicationInsightsJobTelemetry : IJobTelemetry
 
         public void Complete(Dictionary<string, string>? additionalMetrics = null)
         {
-            if (_completed) return;
+            if (_completed)
+            {
+                return;
+            }
+
             _completed = true;
             _stopwatch.Stop();
 
@@ -99,19 +103,28 @@ public sealed class ApplicationInsightsJobTelemetry : IJobTelemetry
                 .WithProperties(_properties);
 
             if (additionalMetrics is not null)
+            {
                 builder.WithProperties(additionalMetrics);
+            }
 
             _auditLogger.LogAudit(builder.Build());
 
             var metric = new MetricTelemetry($"{_jobName}_Duration", _stopwatch.ElapsedMilliseconds);
             foreach (var (key, value) in _properties)
+            {
                 metric.Properties[key] = value;
+            }
+
             _telemetryClient.TrackMetric(metric);
         }
 
         public async Task FailAsync(Exception exception, Dictionary<string, string>? additionalProperties = null)
         {
-            if (_completed) return;
+            if (_completed)
+            {
+                return;
+            }
+
             _completed = true;
             _stopwatch.Stop();
 
@@ -125,7 +138,9 @@ public sealed class ApplicationInsightsJobTelemetry : IJobTelemetry
                 .WithProperties(_properties);
 
             if (additionalProperties is not null)
+            {
                 builder.WithProperties(additionalProperties);
+            }
 
             _auditLogger.LogAudit(builder.Build());
 
@@ -137,7 +152,9 @@ public sealed class ApplicationInsightsJobTelemetry : IJobTelemetry
             if (additionalProperties is not null)
             {
                 foreach (var (key, value) in additionalProperties)
+                {
                     exceptionProperties[key] = value;
+                }
             }
             _telemetryClient.TrackException(exception, exceptionProperties);
             await _telemetryClient.FlushAsync(CancellationToken.None).ConfigureAwait(false);
@@ -146,7 +163,10 @@ public sealed class ApplicationInsightsJobTelemetry : IJobTelemetry
         public ValueTask DisposeAsync()
         {
             if (!_completed)
+            {
                 Complete();
+            }
+
             return ValueTask.CompletedTask;
         }
     }
