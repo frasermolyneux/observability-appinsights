@@ -17,8 +17,8 @@ public static class ServiceCollectionExtensions
     /// </para>
     /// <list type="bullet">
     ///   <item>Binds <see cref="TelemetryFilterOptions"/> from the <c>MX:Observability:Filtering</c> configuration section.</item>
-    ///   <item>Registers <see cref="MX.Observability.ApplicationInsights.Auditing.IAuditLogger"/> and
-    ///         <see cref="MX.Observability.ApplicationInsights.Jobs.IJobTelemetry"/>.</item>
+    ///   <item>Registers <see cref="Auditing.IAuditLogger"/> and
+    ///         <see cref="Jobs.IJobTelemetry"/>.</item>
     ///   <item>Registers <see cref="TelemetryFilterProcessor"/> via the SDK's
     ///         <c>AddApplicationInsightsTelemetryProcessor&lt;T&gt;()</c>, which inserts it into the
     ///         live processor chain when the Application Insights SDK builds the active

@@ -9,7 +9,7 @@ namespace MX.Observability.ApplicationInsights.Extensions;
 /// Extension methods for registering MX Observability core services.
 /// <para>
 /// This package contains the hosting-agnostic pieces: filter options binding, the
-/// <see cref="MX.Observability.ApplicationInsights.Filtering.TelemetryFilterProcessor"/> implementation,
+/// <see cref="Filtering.TelemetryFilterProcessor"/> implementation,
 /// audit logging and job telemetry. Consumers should normally reference one of the host-specific
 /// adapter packages (<c>MX.Observability.ApplicationInsights.AspNetCore</c> or
 /// <c>MX.Observability.ApplicationInsights.WorkerService</c>) which call <see cref="AddObservabilityCore"/>
