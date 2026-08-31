@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="MX.Observability.ApplicationInsights.AspNetCore/MX.Observability.ApplicationInsights.AspNetCore.csproj" />
+  <Project Path="MX.Observability.ApplicationInsights.Tests/MX.Observability.ApplicationInsights.Tests.csproj" />
+  <Project Path="MX.Observability.ApplicationInsights.WorkerService/MX.Observability.ApplicationInsights.WorkerService.csproj" />
+  <Project Path="MX.Observability.ApplicationInsights/MX.Observability.ApplicationInsights.csproj" />
+</Solution>
