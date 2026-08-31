@@ -1,4 +1,3 @@
-#pragma warning disable CS0618 // IHostingEnvironment is obsolete but still required by the Application Insights AspNetCore SDK's DI wiring.
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.ApplicationInsights.AspNetCore;
 using Microsoft.ApplicationInsights.Channel;
