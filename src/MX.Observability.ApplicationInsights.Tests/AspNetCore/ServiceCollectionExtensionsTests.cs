@@ -12,12 +12,14 @@ using MX.Observability.ApplicationInsights.Auditing;
 using MX.Observability.ApplicationInsights.Filtering;
 using MX.Observability.ApplicationInsights.Filtering.Configuration;
 using MX.Observability.ApplicationInsights.Jobs;
+#pragma warning restore CS0618
 
 namespace MX.Observability.ApplicationInsights.Tests.AspNetCore;
 
 [Trait("Category", "Unit")]
 public class ServiceCollectionExtensionsTests
 {
+#pragma warning disable CS0618 // IHostingEnvironment is obsolete but still required by the Application Insights AspNetCore SDK's DI wiring.
     private sealed class StubHostingEnvironment : IHostingEnvironment
     {
         public string EnvironmentName { get; set; } = "Development";
@@ -27,6 +29,7 @@ public class ServiceCollectionExtensionsTests
         public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
         public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
+#pragma warning restore CS0618
 
     private sealed class NullTelemetryProcessor : ITelemetryProcessor
     {
@@ -39,7 +42,9 @@ public class ServiceCollectionExtensionsTests
     {
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+#pragma warning disable CS0618 // IHostingEnvironment is obsolete but still required by the Application Insights AspNetCore SDK's DI wiring.
         services.AddSingleton<IHostingEnvironment>(new StubHostingEnvironment());
+#pragma warning restore CS0618
         services.AddApplicationInsightsTelemetry();
         return services;
     }

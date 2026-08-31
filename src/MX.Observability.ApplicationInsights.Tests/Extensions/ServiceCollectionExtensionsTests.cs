@@ -35,7 +35,7 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void AddObservabilityCore_WithoutConfiguration_BindsSafeDefaults()
+    public void AddObservabilityCore_WithEmptyConfiguration_BindsSafeDefaults()
     {
         var services = CreateServicesWithConfiguration();
 
