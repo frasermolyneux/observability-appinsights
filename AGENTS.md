@@ -4,7 +4,7 @@ Multi-target .NET observability libraries for Application Insights telemetry fil
 
 ## Locations
 
-- Solution: `src/MX.Observability.ApplicationInsights.sln`
+- Solution: `src/MX.Observability.ApplicationInsights.slnx`
 - Core package: `src/MX.Observability.ApplicationInsights`
 - Host adapters: `src/MX.Observability.ApplicationInsights.AspNetCore`, `src/MX.Observability.ApplicationInsights.WorkerService`
 - Tests: `src/MX.Observability.ApplicationInsights.Tests`
@@ -13,10 +13,10 @@ Multi-target .NET observability libraries for Application Insights telemetry fil
 ## Commands
 
 ```pwsh
-dotnet build src/MX.Observability.ApplicationInsights.sln
-dotnet test src/MX.Observability.ApplicationInsights.sln
-dotnet test src/MX.Observability.ApplicationInsights.sln --filter "FullyQualifiedName~MyTestClass.MyTestMethod"
-dotnet format src/MX.Observability.ApplicationInsights.sln --verify-no-changes
+dotnet build src/MX.Observability.ApplicationInsights.slnx
+dotnet test src/MX.Observability.ApplicationInsights.slnx
+dotnet test src/MX.Observability.ApplicationInsights.slnx --filter "FullyQualifiedName~MyTestClass.MyTestMethod"
+dotnet format src/MX.Observability.ApplicationInsights.slnx --verify-no-changes
 ```
 
 ## Constraints

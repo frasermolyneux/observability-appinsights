@@ -5,7 +5,7 @@ This repository publishes Application Insights observability packages for teleme
 ## Runtime and layout
 
 - SDK: `10.0.301` from `global.json`; package and test projects target `net9.0` and `net10.0`.
-- Solution: `src/MX.Observability.ApplicationInsights.sln`.
+- Solution: `src/MX.Observability.ApplicationInsights.slnx`.
 - Core package: `MX.Observability.ApplicationInsights`.
 - Adapters: `MX.Observability.ApplicationInsights.AspNetCore` and `MX.Observability.ApplicationInsights.WorkerService`.
 - Tests: `MX.Observability.ApplicationInsights.Tests`.
@@ -22,10 +22,10 @@ This repository publishes Application Insights observability packages for teleme
 ## Validation
 
 ```pwsh
-dotnet build src/MX.Observability.ApplicationInsights.sln
-dotnet test src/MX.Observability.ApplicationInsights.sln
-dotnet test src/MX.Observability.ApplicationInsights.sln --filter "FullyQualifiedName~MyTestClass.MyTestMethod"
-dotnet format src/MX.Observability.ApplicationInsights.sln --verify-no-changes
+dotnet build src/MX.Observability.ApplicationInsights.slnx
+dotnet test src/MX.Observability.ApplicationInsights.slnx
+dotnet test src/MX.Observability.ApplicationInsights.slnx --filter "FullyQualifiedName~MyTestClass.MyTestMethod"
+dotnet format src/MX.Observability.ApplicationInsights.slnx --verify-no-changes
 ```
 
 Usage and configuration contracts are documented in `README.md`.
