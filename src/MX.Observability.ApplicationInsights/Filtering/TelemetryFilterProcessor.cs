@@ -93,19 +93,63 @@ public sealed class TelemetryFilterProcessor : ITelemetryProcessor
             return false;
         }
 
-        // Always retain failed calls
         if (dependency.Success != true)
         {
+            if (dependency.Success == false &&
+                rules.DependencyExpectedFailures.Any(rule => rule.Matches(dependency)))
+            {
+                // Expected-failure rules can never suppress throttling, server failures,
+                // timeouts, cancellations, or slow calls.
+                return !IsCriticalDependencyFailure(dependency) &&
+                    dependency.Duration.TotalMilliseconds <= rules.DependencyDurationThresholdMs;
+            }
+
             return false;
         }
 
         // Always retain slow calls
-        if (dependency.Duration.TotalMilliseconds > rules.DependencyDurationThresholdMs)
+        return dependency.Duration.TotalMilliseconds <= rules.DependencyDurationThresholdMs;
+    }
+
+    private static bool IsCriticalDependencyFailure(DependencyTelemetry dependency)
+    {
+        if (TryParseStatusCode(dependency.ResultCode, out var statusCode) &&
+            (statusCode is 408 or 429 or 499 or 503 || statusCode >= 500))
+        {
+            return true;
+        }
+
+        return ContainsTimeoutOrCancellationMarker(dependency.ResultCode) ||
+            dependency.Properties.Any(property =>
+                ContainsTimeoutOrCancellationMarker(property.Key) ||
+                ContainsTimeoutOrCancellationMarker(property.Value));
+    }
+
+    private static bool TryParseStatusCode(string? resultCode, out int statusCode)
+    {
+        statusCode = 0;
+        if (string.IsNullOrWhiteSpace(resultCode))
         {
             return false;
         }
 
-        return true;
+        var trimmed = resultCode.Trim();
+        if (int.TryParse(trimmed, out statusCode))
+        {
+            return true;
+        }
+
+        return trimmed.Length >= 3 &&
+            int.TryParse(trimmed.AsSpan(0, 3), out statusCode);
+    }
+
+    private static bool ContainsTimeoutOrCancellationMarker(string? value)
+    {
+        return !string.IsNullOrWhiteSpace(value) &&
+            (value.Contains("timeout", StringComparison.OrdinalIgnoreCase) ||
+             value.Contains("timed out", StringComparison.OrdinalIgnoreCase) ||
+             value.Contains("cancelled", StringComparison.OrdinalIgnoreCase) ||
+             value.Contains("canceled", StringComparison.OrdinalIgnoreCase));
     }
 
     internal static bool ShouldFilterRequest(RequestTelemetry request, ParsedFilterRules rules)

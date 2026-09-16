@@ -54,20 +54,52 @@ builder.Services.AddObservability();
 
 Telemetry filtering is configured via `ApplicationInsights:TelemetryFilter` configuration keys (Azure App Configuration, appsettings.json, etc.):
 
-| Key                                     | Default                      | Description                     |
-| --------------------------------------- | ---------------------------- | ------------------------------- |
-| `...:Enabled`                           | `true`                       | Global kill-switch              |
-| `...:Dependencies:Enabled`              | `true`                       | Filter dependencies             |
-| `...:Dependencies:DurationThresholdMs`  | `1000`                       | Keep slow dependencies          |
-| `...:Dependencies:FilterAllTypes`       | `true`                       | Filter all types (vs allowlist) |
-| `...:Requests:Enabled`                  | `true`                       | Filter requests                 |
-| `...:Requests:DurationThresholdMs`      | `1000`                       | Keep slow requests              |
-| `...:Requests:ExcludedPaths`            | `/health/live,/health/ready` | Always filter these paths       |
-| `...:Requests:RetainedStatusCodeRanges` | `400-599`                    | Always keep errors              |
-| `...:Traces:Enabled`                    | `true`                       | Filter traces                   |
-| `...:Traces:MinSeverity`                | `Warning`                    | Minimum severity to retain      |
+| Key                                        | Default                      | Description                                   |
+| ------------------------------------------ | ---------------------------- | --------------------------------------------- |
+| `...:Enabled`                              | `true`                       | Global kill-switch                            |
+| `...:Dependencies:Enabled`                 | `true`                       | Filter dependencies                           |
+| `...:Dependencies:DurationThresholdMs`     | `1000`                       | Keep slow dependencies                        |
+| `...:Dependencies:FilterAllTypes`          | `true`                       | Filter all types (vs allowlist)               |
+| `...:Dependencies:ExpectedFailures`        | empty                        | Explicit expected-failure signatures          |
+| `...:Requests:Enabled`                     | `true`                       | Filter requests                               |
+| `...:Requests:DurationThresholdMs`         | `1000`                       | Keep slow requests                            |
+| `...:Requests:ExcludedPaths`               | `/health/live,/health/ready` | Always filter these paths                     |
+| `...:Requests:RetainedStatusCodeRanges`    | `400-599`                    | Always keep errors                            |
+| `...:Traces:Enabled`                       | `true`                       | Filter traces                                 |
+| `...:Traces:MinSeverity`                   | `Warning`                    | Minimum severity to retain                    |
 
-See full configuration reference in [docs/configuration.md](docs/configuration.md).
+Expected dependency failures are opt-in indexed rules. Each valid rule requires an exact `Type`, at least one name or target constraint, and exactly one result condition: `ResultCode` or `MatchEmptyResultCode=true`. All configured fields must match, case-insensitively. Invalid or broad rules fail open and retain the dependency.
+
+```json
+{
+  "ApplicationInsights": {
+    "TelemetryFilter": {
+      "Dependencies": {
+        "ExpectedFailures": [
+          {
+            "Type": "InProc | Microsoft.Tables",
+            "Name": "TableClient.GetEntity",
+            "Target": "TableClient.GetEntity",
+            "MatchEmptyResultCode": true
+          },
+          {
+            "Type": "Azure table",
+            "NamePrefix": "GET scache",
+            "NameSuffix": "/RepositoryCache",
+            "TargetPrefix": "scache",
+            "TargetContains": ".table.core.windows.net",
+            "ResultCode": "404"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+Name and target constraints support exact (`Name`, `Target`), prefix, contains, and suffix fields. Expected-failure matching happens only for `Success=false` dependencies after the normal type scope is applied. Expected-failure rules cannot suppress configured retained result codes, HTTP 429/503, any 5xx response, 408/499 timeout or cancellation responses, textual timeout/cancellation markers, slow dependencies, exception telemetry, unconfigured failures, or dependencies with unknown `Success`. Existing `IgnoredTargets` rules remain unconditional. With no `ExpectedFailures` entries, dependency filtering behavior is unchanged.
+
+For package consumers, publish the three packages from the same release, upgrade the host-specific adapter package, deploy the application, and only then enable matching configuration. Unknown configuration keys are ignored by older package versions, but staging the keys before the application upgrade has no effect until the new package is deployed.
 
 ## Audit Logging
 

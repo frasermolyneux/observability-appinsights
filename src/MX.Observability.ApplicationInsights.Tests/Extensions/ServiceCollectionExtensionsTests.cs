@@ -65,6 +65,46 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void AddObservabilityCore_BindsExpectedDependencyFailures()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ApplicationInsights:TelemetryFilter:Dependencies:ExpectedFailures:0:Type"] = "Azure table",
+                ["ApplicationInsights:TelemetryFilter:Dependencies:ExpectedFailures:0:NameSuffix"] = "/RepositoryCache",
+                ["ApplicationInsights:TelemetryFilter:Dependencies:ExpectedFailures:0:ResultCode"] = "404",
+                ["ApplicationInsights:TelemetryFilter:Dependencies:ExpectedFailures:1:Type"] = "InProc | Microsoft.Tables",
+                ["ApplicationInsights:TelemetryFilter:Dependencies:ExpectedFailures:1:Name"] = "TableClient.GetEntity",
+                ["ApplicationInsights:TelemetryFilter:Dependencies:ExpectedFailures:1:MatchEmptyResultCode"] = "true"
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddSingleton(new TelemetryClient(new TelemetryConfiguration()));
+
+        services.AddObservabilityCore();
+        using var provider = services.BuildServiceProvider();
+
+        var expectedFailures = provider.GetRequiredService<IOptions<TelemetryFilterOptions>>()
+            .Value.Dependencies.ExpectedFailures;
+
+        Assert.Collection(
+            expectedFailures,
+            rule =>
+            {
+                Assert.Equal("Azure table", rule.Type);
+                Assert.Equal("/RepositoryCache", rule.NameSuffix);
+                Assert.Equal("404", rule.ResultCode);
+            },
+            rule =>
+            {
+                Assert.Equal("InProc | Microsoft.Tables", rule.Type);
+                Assert.Equal("TableClient.GetEntity", rule.Name);
+                Assert.True(rule.MatchEmptyResultCode);
+            });
+    }
+
+    [Fact]
     public void AddAuditLogging_RegistersAuditLoggerOnly()
     {
         var services = new ServiceCollection();

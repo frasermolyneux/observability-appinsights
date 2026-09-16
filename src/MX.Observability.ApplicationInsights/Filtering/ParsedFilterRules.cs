@@ -20,6 +20,7 @@ internal sealed class ParsedFilterRules
     public string[] DependencyExcludedTypePrefixes { get; }
     public HashSet<string> DependencyIgnoredTargets { get; }
     public HashSet<string> DependencyRetainedResultCodes { get; }
+    public ExpectedDependencyFailureRule[] DependencyExpectedFailures { get; }
 
     // Requests
     public bool RequestsEnabled { get; }
@@ -55,6 +56,7 @@ internal sealed class ParsedFilterRules
         DependencyExcludedTypePrefixes = ParseCsvToArray(deps.ExcludedTypePrefixes);
         DependencyIgnoredTargets = ParseCsvToHashSet(deps.IgnoredTargets);
         DependencyRetainedResultCodes = ParseCsvToHashSet(deps.RetainedResultCodes);
+        DependencyExpectedFailures = ParseExpectedDependencyFailures(deps.ExpectedFailures);
 
         // Requests
         var reqs = options.Requests;
@@ -143,4 +145,120 @@ internal sealed class ParsedFilterRules
         }
         return result.ToArray();
     }
+
+    private static ExpectedDependencyFailureRule[] ParseExpectedDependencyFailures(
+        IEnumerable<ExpectedDependencyFailureOptions>? expectedFailures)
+    {
+        if (expectedFailures is null)
+        {
+            return [];
+        }
+
+        return expectedFailures
+            .Select(ExpectedDependencyFailureRule.TryCreate)
+            .Where(rule => rule is not null)
+            .Cast<ExpectedDependencyFailureRule>()
+            .ToArray();
+    }
+}
+
+internal sealed class ExpectedDependencyFailureRule
+{
+    private ExpectedDependencyFailureRule(ExpectedDependencyFailureOptions options)
+    {
+        Type = Normalize(options.Type);
+        Name = Normalize(options.Name);
+        NamePrefix = Normalize(options.NamePrefix);
+        NameContains = Normalize(options.NameContains);
+        NameSuffix = Normalize(options.NameSuffix);
+        Target = Normalize(options.Target);
+        TargetPrefix = Normalize(options.TargetPrefix);
+        TargetContains = Normalize(options.TargetContains);
+        TargetSuffix = Normalize(options.TargetSuffix);
+        ResultCode = Normalize(options.ResultCode);
+        MatchEmptyResultCode = options.MatchEmptyResultCode;
+    }
+
+    private string Type { get; }
+    private string Name { get; }
+    private string NamePrefix { get; }
+    private string NameContains { get; }
+    private string NameSuffix { get; }
+    private string Target { get; }
+    private string TargetPrefix { get; }
+    private string TargetContains { get; }
+    private string TargetSuffix { get; }
+    private string ResultCode { get; }
+    private bool MatchEmptyResultCode { get; }
+
+    public static ExpectedDependencyFailureRule? TryCreate(ExpectedDependencyFailureOptions options)
+    {
+        var hasIdentityConstraint =
+            !string.IsNullOrWhiteSpace(options.Name) ||
+            !string.IsNullOrWhiteSpace(options.NamePrefix) ||
+            !string.IsNullOrWhiteSpace(options.NameContains) ||
+            !string.IsNullOrWhiteSpace(options.NameSuffix) ||
+            !string.IsNullOrWhiteSpace(options.Target) ||
+            !string.IsNullOrWhiteSpace(options.TargetPrefix) ||
+            !string.IsNullOrWhiteSpace(options.TargetContains) ||
+            !string.IsNullOrWhiteSpace(options.TargetSuffix);
+        var hasResultCode = !string.IsNullOrWhiteSpace(options.ResultCode);
+
+        if (string.IsNullOrWhiteSpace(options.Type) ||
+            !hasIdentityConstraint ||
+            hasResultCode == options.MatchEmptyResultCode)
+        {
+            return null;
+        }
+
+        return new ExpectedDependencyFailureRule(options);
+    }
+
+    public bool Matches(DependencyTelemetry dependency)
+    {
+        return Equals(dependency.Type, Type) &&
+            MatchesText(dependency.Name, Name, NamePrefix, NameContains, NameSuffix) &&
+            MatchesText(dependency.Target, Target, TargetPrefix, TargetContains, TargetSuffix) &&
+            (MatchEmptyResultCode
+                ? string.IsNullOrWhiteSpace(dependency.ResultCode)
+                : Equals(dependency.ResultCode, ResultCode));
+    }
+
+    private static bool MatchesText(
+        string? value,
+        string exact,
+        string prefix,
+        string contains,
+        string suffix)
+    {
+        if (!string.IsNullOrEmpty(exact) && !Equals(value, exact))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(prefix) &&
+            (value is null || !value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(contains) &&
+            (value is null || !value.Contains(contains, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(suffix) &&
+            (value is null || !value.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool Equals(string? left, string right) =>
+        string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
+
+    private static string Normalize(string? value) => value?.Trim() ?? "";
 }

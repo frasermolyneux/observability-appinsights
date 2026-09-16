@@ -9,4 +9,5 @@ public class DependencyFilterOptions
     public string ExcludedTypePrefixes { get; set; } = "";
     public string IgnoredTargets { get; set; } = "";
     public string RetainedResultCodes { get; set; } = "";
+    public List<ExpectedDependencyFailureOptions> ExpectedFailures { get; set; } = [];
 }

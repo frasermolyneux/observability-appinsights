@@ -127,6 +127,48 @@ public class TelemetryFilterProcessorTests
     }
 
     [Fact]
+    public void Process_WhenExpectedFailuresReloaded_UsesUpdatedRules()
+    {
+        var initialOptions = new TelemetryFilterOptions();
+        Action<TelemetryFilterOptions, string?>? reload = null;
+        var monitor = new Mock<IOptionsMonitor<TelemetryFilterOptions>>();
+        monitor.SetupGet(m => m.CurrentValue).Returns(initialOptions);
+        monitor.Setup(m => m.OnChange(It.IsAny<Action<TelemetryFilterOptions, string?>>()))
+            .Callback<Action<TelemetryFilterOptions, string?>>(callback => reload = callback)
+            .Returns(Mock.Of<IDisposable>());
+        var processor = new TelemetryFilterProcessor(_nextProcessor.Object, monitor.Object);
+        var dependency = new DependencyTelemetry
+        {
+            Success = false,
+            Duration = TimeSpan.FromMilliseconds(7),
+            Type = "InProc | Microsoft.Tables",
+            Name = "TableClient.GetEntity",
+            ResultCode = ""
+        };
+
+        processor.Process(dependency);
+
+        reload!(new TelemetryFilterOptions
+        {
+            Dependencies = new DependencyFilterOptions
+            {
+                ExpectedFailures =
+                [
+                    new ExpectedDependencyFailureOptions
+                    {
+                        Type = "InProc | Microsoft.Tables",
+                        Name = "TableClient.GetEntity",
+                        MatchEmptyResultCode = true
+                    }
+                ]
+            }
+        }, null);
+        processor.Process(dependency);
+
+        Assert.Single(_passedThrough);
+    }
+
+    [Fact]
     public void Process_EventTelemetry_DelegatesToShouldFilter()
     {
         var options = new TelemetryFilterOptions
